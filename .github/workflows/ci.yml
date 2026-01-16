@@ -1,24 +1,30 @@
 name: CI
 
-on: [ push, pull_request ]
+on:
+  push:
+    branches: [ master ]
+  pull_request:
 
 jobs:
-  build:
+  build-test-and-push:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node: [ '12', '14', '16' ]
-    name: Node ${{ matrix.node }} sample
-    
+
     steps:
-      - uses: actions/checkout@v3
-      
+      # -----------------------------
+      # Checkout
+      # -----------------------------
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # -----------------------------
+      # Java / Spring Boot
+      # -----------------------------
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           java-version: 17
-          distribution: 'temurin'
-          
+          distribution: temurin
+
       - name: Cache Gradle packages
         uses: actions/cache@v3
         with:
@@ -26,32 +32,62 @@ jobs:
             ~/.gradle/caches
             ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-          
-      - name: Unit Tests
+
+      - name: Run Spring Boot tests
         run: ./SpringCRUD/gradlew -p ./SpringCRUD test
-        
-      - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v1.33
-        if: always()
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          check_name: Unit Test Results
-          files: SpringCRUD/build/test-results/test/TEST*.xml
-          report_individual_runs: true
-          deduplicate_classes_by_file_name: false
-        
-      - name: Unit Tests and static code analysis
-        if: success()
+
+      - name: Static code analysis
         run: ./SpringCRUD/gradlew -p ./SpringCRUD check
-        
-      - name: Build with Gradle
+
+      - name: Build Spring Boot JAR
         run: ./SpringCRUD/gradlew -p ./SpringCRUD build
-        
-      - name: Setup node
+
+      # -----------------------------
+      # Angular
+      # -----------------------------
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node }}
-      - run: npm install --prefix ./AngularCRUD/
-      - run: npm run build --prefix ./AngularCRUD/
+          node-version: 16
+
+      - name: Install Angular dependencies
+        run: npm install --prefix ./AngularCRUD
+
+      - name: Build Angular app
+        run: npm run build --prefix ./AngularCRUD
+
+      # -----------------------------
+      # Azure Login
+      # -----------------------------
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+
+      - name: Login to Azure Container Registry
+        run: az acr login --name ${{ secrets.ACR_LOGIN_SERVER }}
+
+      # -----------------------------
+      # Docker Build & Push
+      # -----------------------------
+      - name: Build Spring Docker image
+        run: |
+          docker build \
+            -t ${{ secrets.ACR_LOGIN_SERVER }}/3tierapp-spring:latest \
+            SpringCRUD
+
+      - name: Build Angular Docker image
+        run: |
+          docker build \
+            -t ${{ secrets.ACR_LOGIN_SERVER }}/3tierapp-angular:latest \
+            AngularCRUD
+
+      - name: Push Spring image to ACR
+        run: docker push ${{ secrets.ACR_LOGIN_SERVER }}/3tierapp-spring:latest
+
+      - name: Push Angular image to ACR
+        run: docker push ${{ secrets.ACR_LOGIN_SERVER }}/3tierapp-angular:latest
+
