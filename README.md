@@ -30,3 +30,4 @@ The docker compose setup includes Adminer for adminstrating the data base. Once 
 | User             | root         |
 | Password         | springCRUD   |
 | Data base        | bookDatabase |
+# trigger ci
