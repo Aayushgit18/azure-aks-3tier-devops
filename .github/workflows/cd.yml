@@ -38,5 +38,5 @@ jobs:
 
       - name: Deploy application using Helm
         run: |
-          helm upgrade --install mybookcollection ./3tierapp/helm/mybookcollection
+          helm upgrade --install mybookcollection ./helm/mybookcollection
 
