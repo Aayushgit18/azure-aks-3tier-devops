@@ -1,18 +1,25 @@
 name: CD - Deploy to AKS
 
 on:
+  # Auto trigger
   workflow_run:
     workflows: ["CI"]
     types:
       - completed
 
+  # Manual trigger
+  workflow_dispatch:
+
 jobs:
   deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Azure Login
@@ -29,7 +36,7 @@ jobs:
       - name: Setup Helm
         uses: azure/setup-helm@v4
 
-      - name: Deploy using Helm
+      - name: Deploy application using Helm
         run: |
-          helm upgrade --install mybookcollection ./helm/mybookcollection
+          helm upgrade --install mybookcollection ./3tierapp/helm/mybookcollection
 
