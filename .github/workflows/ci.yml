@@ -12,15 +12,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # -----------------------------
       # Checkout
-      # -----------------------------
       - name: Checkout source code
         uses: actions/checkout@v3
 
-      # -----------------------------
       # Java / Spring Boot
-      # -----------------------------
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
@@ -46,9 +42,7 @@ jobs:
       - name: Build Spring Boot JAR
         run: ./SpringCRUD/gradlew -p ./SpringCRUD build
 
-      # -----------------------------
       # Code Coverage (Codecov)
-      # -----------------------------
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
@@ -58,9 +52,7 @@ jobs:
           name: spring-coverage
           fail_ci_if_error: true
 
-      # -----------------------------
       # Angular
-      # -----------------------------
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -72,9 +64,7 @@ jobs:
       - name: Build Angular app
         run: npm run build --prefix ./AngularCRUD
 
-      # -----------------------------
-      # Azure Login (OPTION A)
-      # -----------------------------
+      # Azure Login 
       - name: Azure Login
         uses: azure/login@v1
         with:
@@ -83,9 +73,7 @@ jobs:
       - name: Login to Azure Container Registry
         run: az acr login --name ${{ secrets.ACR_LOGIN_SERVER }}
 
-      # -----------------------------
       # Docker Build
-      # -----------------------------
       - name: Build Spring Docker image
         run: |
           docker build \
@@ -98,12 +86,11 @@ jobs:
             -t ${{ secrets.ACR_LOGIN_SERVER }}/3tierapp-angular:latest \
             ./AngularCRUD
 
-      # -----------------------------
       # Docker Push
-      # -----------------------------
       - name: Push Spring image to ACR
         run: docker push ${{ secrets.ACR_LOGIN_SERVER }}/3tierapp-spring:latest
 
       - name: Push Angular image to ACR
         run: docker push ${{ secrets.ACR_LOGIN_SERVER }}/3tierapp-angular:latest
+
 
