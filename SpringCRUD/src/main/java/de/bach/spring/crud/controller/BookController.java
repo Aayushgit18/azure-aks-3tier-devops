@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class BookController {
 
@@ -27,18 +27,20 @@ public class BookController {
     }
 
     @PostMapping("/addBook")
-    public Book addBook(final @RequestBody Book book) {
+    public Book addBook(@RequestBody Book book) {
         return this.service.saveBook(book);
     }
 
     @PutMapping("/updateBook/{bookId}")
-    public Book updateBook(@PathVariable("bookId") final long bookId, final @RequestBody Book book) {
+    public Book updateBook(
+            @PathVariable("bookId") long bookId,
+            @RequestBody Book book
+    ) {
         return this.service.updateBook(book, bookId);
     }
 
     @DeleteMapping("/deleteBook/{bookId}")
-    public void deleteBook(@PathVariable("bookId") final long bookId) {
+    public void deleteBook(@PathVariable("bookId") long bookId) {
         this.service.deleteBook(bookId);
     }
-
 }
