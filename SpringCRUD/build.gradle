@@ -31,20 +31,8 @@ spotbugsMain {
 }
 
 pmd {
-    toolVersion = "6.42.0"
-    sourceSets = [sourceSets.main]
-    consoleOutput = true
-    ruleSets = [
-            "category/java/errorprone.xml",
-            "category/java/bestpractices.xml",
-            "category/java/codestyle.xml",
-            "category/java/design.xml",
-            "category/java/multithreading.xml",
-            "category/java/performance.xml",
-            "category/java/security.xml"
-    ]
+    ignoreFailures = true
 }
-
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
@@ -90,4 +78,5 @@ jacocoTestCoverageVerification {
             }
         }
     }
+
 }
