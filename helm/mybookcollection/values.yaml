@@ -1,0 +1,15 @@
+image:
+  registry: acr3tierci1234.azurecr.io
+
+backend:
+  image: 3tierapp-spring
+  tag: latest
+
+frontend:
+  image: 3tierapp-angular
+  tag: latest
+
+mysql:
+  rootPassword: root
+  database: bookDatabase
+

@@ -15,7 +15,7 @@ jobs:
       # -----------------------------
       # Checkout
       # -----------------------------
-      - name: Checkout code
+      - name: Checkout source code
         uses: actions/checkout@v3
 
       # -----------------------------
@@ -34,6 +34,8 @@ jobs:
             ~/.gradle/caches
             ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
       - name: Run Spring Boot tests
         run: ./SpringCRUD/gradlew -p ./SpringCRUD test
@@ -43,6 +45,18 @@ jobs:
 
       - name: Build Spring Boot JAR
         run: ./SpringCRUD/gradlew -p ./SpringCRUD build
+
+      # -----------------------------
+      # Code Coverage (Codecov)
+      # -----------------------------
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./SpringCRUD/build/reports/jacoco/test/jacocoTestReport.xml
+          flags: backend
+          name: spring-coverage
+          fail_ci_if_error: true
 
       # -----------------------------
       # Angular
@@ -70,17 +84,26 @@ jobs:
         run: az acr login --name ${{ secrets.ACR_LOGIN_SERVER }}
 
       # -----------------------------
-      # Docker Build & Push
+      # Docker Build
       # -----------------------------
       - name: Build Spring Docker image
-        run: docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/3tierapp-spring:latest ./SpringCRUD
+        run: |
+          docker build \
+            -t ${{ secrets.ACR_LOGIN_SERVER }}/3tierapp-spring:latest \
+            ./SpringCRUD
 
       - name: Build Angular Docker image
-        run: docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/3tierapp-angular:latest ./AngularCRUD
+        run: |
+          docker build \
+            -t ${{ secrets.ACR_LOGIN_SERVER }}/3tierapp-angular:latest \
+            ./AngularCRUD
 
-      - name: Push Spring image
+      # -----------------------------
+      # Docker Push
+      # -----------------------------
+      - name: Push Spring image to ACR
         run: docker push ${{ secrets.ACR_LOGIN_SERVER }}/3tierapp-spring:latest
 
-      - name: Push Angular image
+      - name: Push Angular image to ACR
         run: docker push ${{ secrets.ACR_LOGIN_SERVER }}/3tierapp-angular:latest
 
