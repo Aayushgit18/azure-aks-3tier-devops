@@ -7,7 +7,7 @@ import { Injectable } from '@angular/core';
 export class ApiService {
 
   // ✅ Kubernetes service name + port
-  private baseUrl: string = 'http://backend:8080';
+  private baseUrl: string = 'http://52.224.87.132:30081';
 
   constructor(private http: HttpClient) {}
 
@@ -31,3 +31,4 @@ export class ApiService {
     return this.http.delete<any>(`${this.baseUrl}/deleteBook/${bookId}`);
   }
 }
+
