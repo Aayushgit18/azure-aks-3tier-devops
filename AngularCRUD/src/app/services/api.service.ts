@@ -5,22 +5,28 @@ import { Injectable } from '@angular/core';
   providedIn: 'root',
 })
 export class ApiService {
-  baseUrl: string = 'http://localhost:8080';
+
+  // ✅ Kubernetes service name + port
+  private baseUrl: string = 'http://backend:8080';
 
   constructor(private http: HttpClient) {}
 
+  // GET all books
   getBooks() {
     return this.http.get<any>(`${this.baseUrl}/allBooks`);
   }
 
+  // ADD book
   postBook(data: any) {
     return this.http.post<any>(`${this.baseUrl}/addBook`, data);
   }
 
+  // UPDATE book
   putBook(data: any, bookId: number) {
     return this.http.put<any>(`${this.baseUrl}/updateBook/${bookId}`, data);
   }
 
+  // DELETE book
   deleteBook(bookId: number) {
     return this.http.delete<any>(`${this.baseUrl}/deleteBook/${bookId}`);
   }
