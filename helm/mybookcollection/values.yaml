@@ -4,12 +4,22 @@ image:
 backend:
   image: 3tierapp-spring
   tag: latest
+  service:
+    type: ClusterIP
+    port: 8080
 
 frontend:
   image: 3tierapp-angular
   tag: latest
+  service:
+    type: LoadBalancer
+    port: 80
 
 mysql:
+  image: mysql
+  tag: "8.0"
   rootPassword: root
   database: bookDatabase
-
+  service:
+    type: ClusterIP
+    port: 3306
