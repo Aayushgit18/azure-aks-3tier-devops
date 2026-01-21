@@ -19,9 +19,7 @@ backend:
     type: ClusterIP
     port: 8080
 
-# -----------------------------
 # Frontend (Angular)
-# -----------------------------
 frontend:
   image: aayush595/mybook-frontend
   tag: "FINAL"        
