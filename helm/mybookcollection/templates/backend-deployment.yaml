@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend
+  labels:
+    app: backend
 spec:
   replicas: {{ .Values.backend.replicaCount }}
   selector:
@@ -16,13 +18,22 @@ spec:
         - name: backend
           image: "{{ .Values.backend.image }}:{{ .Values.backend.tag }}"
           imagePullPolicy: Always
+
           env:
+            # JDBC URL (NON-SECRET)
             - name: SPRING_DATASOURCE_URL
-              value: "jdbc:mysql://mysql:{{ .Values.mysql.service.port }}/{{ .Values.mysql.database }}"
+              value: "jdbc:mysql://mysql:{{ .Values.mysql.service.port }}/{{ .Values.mysql.database }}?useSSL=false&allowPublicKeyRetrieval=true"
+
+            # DB username (NON-SECRET)
             - name: SPRING_DATASOURCE_USERNAME
               value: "root"
+
+            # DB password (FROM AZURE KEY VAULT → CSI → K8s SECRET)
             - name: SPRING_DATASOURCE_PASSWORD
-              value: "{{ .Values.mysql.rootPassword }}"
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secrets
+                  key: MYSQL_ROOT_PASSWORD
+
           ports:
             - containerPort: {{ .Values.backend.service.port }}
-
