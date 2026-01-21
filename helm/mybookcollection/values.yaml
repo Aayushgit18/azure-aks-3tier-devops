@@ -4,8 +4,6 @@
 mysql:
   image: mysql
   tag: "8.0"
-  rootPassword: root
-  database: bookDatabase
   service:
     type: ClusterIP
     port: 3306

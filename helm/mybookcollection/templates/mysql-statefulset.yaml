@@ -18,14 +18,32 @@ spec:
           image: mysql:8.0
           env:
             - name: MYSQL_ROOT_PASSWORD
-              value: {{ .Values.mysql.rootPassword }}
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secrets
+                  key: MYSQL_ROOT_PASSWORD
             - name: MYSQL_DATABASE
-              value: {{ .Values.mysql.database }}
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secrets
+                  key: MYSQL_DATABASE
           ports:
             - containerPort: 3306
           volumeMounts:
             - name: mysql-data
               mountPath: /var/lib/mysql
+            - name: secrets-store-inline
+              mountPath: /mnt/secrets-store
+              readOnly: true
+
+      volumes:
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: mysql-kv-secrets
+
   volumeClaimTemplates:
     - metadata:
         name: mysql-data
