@@ -1,7 +1,7 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { ApiService } from '../services/api.service';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { ApiService } from '../services/api.service';
 
 @Component({
   selector: 'app-dialog',
@@ -33,32 +33,19 @@ export class DialogComponent implements OnInit {
 
     if (this.editData) {
       this.actionBtn = 'Update';
-      this.bookForm.controls['bookName'].setValue(this.editData.bookName);
-      this.bookForm.controls['isbn'].setValue(this.editData.isbn);
-      this.bookForm.controls['topic'].setValue(this.editData.topic);
-      this.bookForm.controls['publicationDate'].setValue(
-        this.editData.publicationDate
-      );
-      this.bookForm.controls['status'].setValue(this.editData.status);
-      this.bookForm.controls['price'].setValue(this.editData.price);
-      this.bookForm.controls['comment'].setValue(this.editData.comment);
+      this.bookForm.patchValue(this.editData);
     }
   }
 
   addBook() {
-    if (!this.editData) {
-      if (this.bookForm.valid) {
-        this.api.postBook(this.bookForm.value).subscribe({
-          next: (response) => {
-            alert('Book added successfully');
-            this.bookForm.reset();
-            this.dialogRef.close('save');
-          },
-          error: () => {
-            alert('Error while adding the book');
-          },
-        });
-      }
+    if (!this.editData && this.bookForm.valid) {
+      this.api.postBook(this.bookForm.value).subscribe({
+        next: () => {
+          alert('Book added successfully');
+          this.dialogRef.close('save');
+        },
+        error: () => alert('Error while adding the book'),
+      });
     } else {
       this.updateBook();
     }
@@ -66,14 +53,12 @@ export class DialogComponent implements OnInit {
 
   updateBook() {
     this.api.putBook(this.bookForm.value, this.editData.bookId).subscribe({
-      next: (response) => {
+      next: () => {
         alert('Book updated successfully');
-        this.bookForm.reset();
         this.dialogRef.close('update');
       },
-      error: (error) => {
-        alert('Error while updating the book');
-      },
+      error: () => alert('Error while updating the book'),
     });
   }
 }
+

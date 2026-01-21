@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: backend
 spec:
-  replicas: 1
+  replicas: {{ .Values.backend.replicaCount }}
   selector:
     matchLabels:
       app: backend
@@ -14,14 +14,15 @@ spec:
     spec:
       containers:
         - name: backend
-          image: "{{ .Values.image.registry }}/{{ .Values.backend.image }}:{{ .Values.backend.tag }}"
+          image: "{{ .Values.backend.image }}:{{ .Values.backend.tag }}"
+          imagePullPolicy: Always
           env:
             - name: SPRING_DATASOURCE_URL
-              value: jdbc:mysql://mysql:3306/{{ .Values.mysql.database }}
+              value: "jdbc:mysql://mysql:{{ .Values.mysql.service.port }}/{{ .Values.mysql.database }}"
             - name: SPRING_DATASOURCE_USERNAME
-              value: root
+              value: "root"
             - name: SPRING_DATASOURCE_PASSWORD
-              value: {{ .Values.mysql.rootPassword }}
+              value: "{{ .Values.mysql.rootPassword }}"
           ports:
-            - containerPort: 8080
+            - containerPort: {{ .Values.backend.service.port }}
 

@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatDialog, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { DialogComponent } from './dialog/dialog.component';
 import { ApiService } from './services/api.service';
 import { MatPaginator } from '@angular/material/paginator';
@@ -22,6 +22,7 @@ export class AppComponent implements OnInit {
     'comment',
     'action',
   ];
+
   dataSource!: MatTableDataSource<any>;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -39,7 +40,7 @@ export class AppComponent implements OnInit {
         width: '40%',
       })
       .afterClosed()
-      .subscribe((value) => {
+      .subscribe((value: any) => {
         if (value === 'save') {
           this.getAllBooks();
         }
@@ -48,12 +49,12 @@ export class AppComponent implements OnInit {
 
   getAllBooks() {
     this.api.getBooks().subscribe({
-      next: (response) => {
+      next: (response: any) => {
         this.dataSource = new MatTableDataSource(response);
         this.dataSource.paginator = this.paginator;
         this.dataSource.sort = this.sort;
       },
-      error: (error) => {
+      error: (error: any) => {
         alert('Error while fetching the records!');
       },
     });
@@ -61,9 +62,12 @@ export class AppComponent implements OnInit {
 
   editBook(row: any) {
     this.dialog
-      .open(DialogComponent, { width: '40%', data: row })
+      .open(DialogComponent, {
+        width: '40%',
+        data: row,
+      })
       .afterClosed()
-      .subscribe((value) => {
+      .subscribe((value: any) => {
         if (value === 'update') {
           this.getAllBooks();
         }
@@ -72,11 +76,11 @@ export class AppComponent implements OnInit {
 
   deleteBook(bookId: number) {
     this.api.deleteBook(bookId).subscribe({
-      next: (response) => {
+      next: (response: any) => {
         alert('Book deleted successfully');
         this.getAllBooks();
       },
-      error: (error) => {
+      error: (error: any) => {
         alert('Error while deleting book');
       },
     });
@@ -91,3 +95,4 @@ export class AppComponent implements OnInit {
     }
   }
 }
+
