@@ -4,6 +4,7 @@
 mysql:
   image: mysql
   tag: "8.0"
+  database: bookDatabase
   service:
     type: ClusterIP
     port: 3306
@@ -19,13 +20,14 @@ backend:
     type: ClusterIP
     port: 8080
 
+# -----------------------------
 # Frontend (Angular)
+# -----------------------------
 frontend:
   image: aayush595/mybook-frontend
-  tag: "FINAL"        
+  tag: "FINAL"
   replicaCount: 1
   service:
     type: NodePort
     port: 80
     nodePort: 30007
-
