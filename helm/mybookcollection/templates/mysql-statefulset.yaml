@@ -8,35 +8,69 @@ spec:
   selector:
     matchLabels:
       app: mysql
+
   template:
     metadata:
       labels:
         app: mysql
     spec:
-      containers:
-        - name: mysql
-          image: mysql:8.0
-          env:
-            - name: MYSQL_ROOT_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: mysql-secrets
-                  key: MYSQL_ROOT_PASSWORD
-            - name: MYSQL_DATABASE
-              valueFrom:
-                secretKeyRef:
-                  name: mysql-secrets
-                  key: MYSQL_DATABASE
-          ports:
-            - containerPort: 3306
+
+      # Init Container (CSI → ENV)
+      #################################
+      initContainers:
+        - name: init-mysql-secrets
+          image: busybox
+          command:
+            - sh
+            - -c
+            - |
+              echo "export MYSQL_ROOT_PASSWORD=$(cat /mnt/secrets-store/MYSQL_ROOT_PASSWORD)" > /env/mysql.env
+              echo "export MYSQL_DATABASE=$(cat /mnt/secrets-store/MYSQL_DATABASE)" >> /env/mysql.env
           volumeMounts:
-            - name: mysql-data
-              mountPath: /var/lib/mysql
             - name: secrets-store-inline
               mountPath: /mnt/secrets-store
               readOnly: true
+            - name: mysql-env
+              mountPath: /env
 
+      # MySQL Container
+      #################################
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          ports:
+            - containerPort: 3306
+
+          command:
+            - sh
+            - -c
+            - |
+              . /env/mysql.env && exec docker-entrypoint.sh mysqld
+
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /var/lib/mysql
+            - name: mysql-env
+              mountPath: /env
+
+          livenessProbe:
+            tcpSocket:
+              port: 3306
+            initialDelaySeconds: 30
+            periodSeconds: 10
+
+          readinessProbe:
+            tcpSocket:
+              port: 3306
+            initialDelaySeconds: 15
+            periodSeconds: 5
+
+      # Volumes
+      #################################
       volumes:
+        - name: mysql-env
+          emptyDir: {}
+
         - name: secrets-store-inline
           csi:
             driver: secrets-store.csi.k8s.io
@@ -44,6 +78,8 @@ spec:
             volumeAttributes:
               secretProviderClass: mysql-kv-secrets
 
+  # Persistent Volume
+  #################################
   volumeClaimTemplates:
     - metadata:
         name: mysql-data
@@ -52,4 +88,3 @@ spec:
         resources:
           requests:
             storage: 2Gi
-
