@@ -1,6 +1,4 @@
-# -----------------------------
 # MySQL Configuration
-# -----------------------------
 mysql:
   image: mysql
   tag: "8.0"
@@ -9,9 +7,7 @@ mysql:
     type: ClusterIP
     port: 3306
 
-# -----------------------------
 # Backend (Spring Boot)
-# -----------------------------
 backend:
   image: aayush595/mybook-backend
   tag: "1.0"
@@ -20,9 +16,7 @@ backend:
     type: ClusterIP
     port: 8080
 
-# -----------------------------
 # Frontend (Angular)
-# -----------------------------
 frontend:
   image: aayush595/mybook-frontend
   tag: "FINAL"
