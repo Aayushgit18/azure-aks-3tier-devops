@@ -114,7 +114,7 @@ npm -v
 ## 3. Azure Authentication
 
 ```bash
-az login
+az login --use-device-code
 ```
 
 Verify:
@@ -330,4 +330,5 @@ USE <MYSQL_DATABASE_NAME>;
 SHOW TABLES;
 SELECT * FROM book;
 ```
+
 
